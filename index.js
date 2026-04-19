@@ -13,6 +13,15 @@ const pool = new Pool({
     ssl: { rejectUnauthorized: false }
 });
 
+// Health check / Welkomstpagina
+app.get('/', (req, res) => {
+    res.json({
+        status: 'online',
+        message: 'MapTrack Tile Server is Live!',
+        endpoint: '/v1/heatmap/{z}/{x}/{y}.png'
+    });
+});
+
 app.get('/v1/heatmap/:z/:x/:y.png', async (req, res) => {
     const z = parseInt(req.params.z);
     const x = parseInt(req.params.x);
