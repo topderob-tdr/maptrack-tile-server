@@ -8,10 +8,18 @@ const app = express();
 const merc = new SphericalMercator({ size: 256 });
 
 // Database verbinding
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:Beukenlaan2005!@db.sbhofksxfajzwzckecxa.supabase.co:5432/postgres";
+
+if (!process.env.DATABASE_URL) {
+    console.log("DATABASE_URL niet gevonden in environment, gebruik handmatige fallback.");
+}
+
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
+
+pool.on('error', (err) => console.error('Onverwachte databasefout:', err));
 
 // Health check / Welkomstpagina
 app.get('/', (req, res) => {
@@ -53,6 +61,8 @@ app.get('/v1/heatmap/:z/:x/:y.png', async (req, res) => {
         ctx.globalAlpha = 0.4;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
+        ctx.shadowColor = '#9333EA';
+        ctx.shadowBlur = 5;
 
         result.rows.forEach(row => {
             const geometry = JSON.parse(row.geojson);
@@ -76,7 +86,7 @@ app.get('/v1/heatmap/:z/:x/:y.png', async (req, res) => {
         canvas.createPNGStream().pipe(res);
 
     } catch (err) {
-        console.error(`Fout bij renderen tegel ${z}/${x}/${y}:`, err);
+        console.error(`Render Fout [${z}/${x}/${y}]:`, err.message);
         res.status(500).send('Tile Rendering Error');
     }
 });
