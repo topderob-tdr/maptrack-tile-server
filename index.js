@@ -1,4 +1,7 @@
 require('dotenv').config();
+const dns = require('dns');
+// Forceer Node.js om IPv4 te verkiezen boven IPv6 om verbindingsfouten op Render te voorkomen
+dns.setDefaultResultOrder('ipv4first');
 const express = require('express');
 const { Pool } = require('pg');
 const { createCanvas } = require('canvas');
@@ -8,15 +11,17 @@ const app = express();
 const merc = new SphericalMercator({ size: 256 });
 
 // Database verbinding
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:Beukenlaan2005!@db.sbhofksxfajzwzckecxa.supabase.co:5432/postgres";
+// Gebruik de Pooler URL (eu-west-1 voor Ierland) om de IPv6-beperkingen van Render te omzeilen
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://postgres:Beukenlaan2005!@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true";
 
 if (!process.env.DATABASE_URL) {
-    console.log("DATABASE_URL niet gevonden in environment, gebruik handmatige fallback.");
+    console.warn("Geen DATABASE_URL gevonden in Render settings, we gebruiken de handmatige eu-west-1 Pooler fallback.");
 }
 
 const pool = new Pool({
     connectionString: DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: { rejectUnauthorized: false },
+    max: 10, // Voorkom dat we te veel verbindingen openen op de Pooler
 });
 
 pool.on('error', (err) => console.error('Onverwachte databasefout:', err));
