@@ -1,0 +1,17 @@
+{
+  "name": "maptrack-tile-server",
+  "version": "1.0.0",
+  "description": "Raster Tile Server voor MapTrack Heatmap",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "@mapbox/sphericalmercator": "^1.1.0",
+    "canvas": "^3.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "pg": "^8.13.1"
+  }
+}
